@@ -1,0 +1,34 @@
+name: Builds
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  linux-build:
+
+    permissions:
+      packages: write
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+          ctest -V
+          ./demo ../tests/data/be_bigtiff_strip_single_band.tif 
+          ./demo ../tests/data/tiled.tif 
+          ./demo ../tests/data/two_ifds.tif 
+          ./demo ../tests/data/image_description.tif
